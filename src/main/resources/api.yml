@@ -1,28 +1,208 @@
-openapi: "3.0.1"
+openapi: 3.0.0
 info:
+  title: Banking API
   version: 1.0.0
-  title: ¡Hola Mundo!
+  description: API for managing banking operations
 servers:
-  - url: http://localhost:8585
+  - url: http://localhost:8080
+    description: Local development server
 paths:
-  /hello:
+  /clients:
     get:
-      summary: Retorna Hola Mundo
-      operationId: hello
-      tags:
-        - hello
+      summary: Get all clients
+      operationId: getAllClients
       responses:
         '200':
-          description: Hola Mundo
+          description: List of clients retrieved successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HelloResponse"
+                type: array
+                items:
+                  $ref: '#/components/schemas/Client'
+    post:
+      summary: Create a new client
+      operationId: createClient
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Client'
+      responses:
+        '201':
+          description: Client created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+        '400':
+          description: Bad request
+
+  /clients/{clientId}:
+    get:
+      summary: Get client by ID
+      operationId: getClientById
+      parameters:
+        - name: clientId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Client details retrieved successfully
+          content:
+            application/json:
+              example:
+                $ref: '#/components/schemas/Client'
+        '404':
+          description: Client not found
+
+  /clients/{clientId}/accounts:
+    get:
+      summary: Get accounts of a client
+      operationId: getClientAccounts
+      parameters:
+        - name: clientId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of accounts retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Account'
+        '404':
+          description: Client not found
+
+  /accounts/{accountId}/transactions:
+    get:
+      summary: Get transactions of an account
+      operationId: getAccountTransactions
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of transactions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Transaction'
+        '404':
+          description: Account not found
 components:
   schemas:
-    HelloResponse:
-      required:
-        - text
+    Client:
+      type: object
       properties:
-        text:
+        id:
           type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum:
+            - personal
+            - empresarial
+        accounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Account'
+        creditos:
+          type: array
+          items:
+            $ref: '#/components/schemas/Credit'
+      required:
+        - name
+        - type
+    Account:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum:
+            - ahorro
+            - corriente
+            - plazoFijo
+        id_cliente:
+          type: string
+        balance:
+          type: number
+      required:
+        - type
+        - balance
+        - id_cliente
+    Credit:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum:
+            - personal
+            - empresarial
+        id_cliente:
+          type: string
+        amount:
+          type: number
+      required:
+        - id_cliente
+        - id
+        - type
+        - amount
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: string
+        id_cliente:
+          type: string
+        type:
+          type: string
+        amount:
+          type: number
+        orig_account:
+          type: string
+        destiny_account:
+          type: string
+      required:
+        - id_cliente
+        - type
+        - amount
+        - orig_account
+        - destiny_account
+    Card:
+      type: object
+      properties:
+        id:
+          type: string
+        id_account:
+          type: string
+        id_cliente:
+          type: string
+        type:
+          type: string
+          enum:
+            - personal
+            - empresarial
+        limit:
+          type: number
+      required:
+        - id_cliente
+        - type
+        - limit
